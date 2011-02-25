@@ -227,17 +227,32 @@ task :logs do
 end
 
 namespace :db do
+# Commented out because it's not exactly what the command means
+#  task :pull do
+#    each_heroku_app do |name, app, repo|
+#      sh "heroku pgdumps:capture --app #{app}"
+#      dump = `heroku pgdumps --app #{app}`.split("\n").last.split(" ").first
+#      sh "mkdir -p #{Rails.root}/db/dumps"
+#      file = "#{Rails.root}/db/dumps/#{dump}.sql.gz"
+#      url = `heroku pgdumps:url --app #{app} #{dump}`.chomp
+#      sh "wget", url, "-O", file
+#      sh "rake db:drop db:create"
+#      sh "gunzip -c #{file} | #{Rails.root}/script/dbconsole"
+#      sh "rake jobs:clear"
+#    end
+#  end
+
+  desc "Pull database from app"
   task :pull do
+   each_heroku_app do |name, app, repo|
+     sh "heroku db:pull --app #{app} --confirm #{app}"
+   end
+  end
+
+  desc "Push database to app"
+  task :push do
     each_heroku_app do |name, app, repo|
-      sh "heroku pgbackups:capture --app #{app}"
-      dump = `heroku pgbackups --app #{app}`.split("\n").last.split(" ").first
-      sh "mkdir -p #{Rails.root}/db/dumps"
-      file = "#{Rails.root}/db/dumps/#{dump}.sql.gz"
-      url = `heroku pgbackups:url --app #{app} #{dump}`.chomp
-      sh "wget", url, "-O", file
-      sh "rake db:drop db:create"
-      sh "gunzip -c #{file} | #{Rails.root}/script/dbconsole"
-      sh "rake jobs:clear"
+      sh "heroku db:push --app #{app} --confirm #{app}"
     end
   end
 end
